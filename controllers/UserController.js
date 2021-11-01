@@ -2,10 +2,10 @@ const User = require("../models/User");
 const bcrypt = require('bcryptjs');
 
 const updateUser  = async (req, res) => {
-    const { userId, password } = req.body;
+    const { userId, password, isAdmin } = req.body;
 
     // verify user id with params id or user is admin
-    if (userId === req.params.id || req.user.isAdmin) {
+    if (userId === req.params.id || isAdmin) {
         if(password) {
             try {
                 const salt = await bcrypt.genSalt(10);
@@ -56,8 +56,27 @@ const getUser = async (req, res) => {
     }
 }
 
-const followUser = async () => {
+const followUser = async (req, res) => {
+    const { userId } = req.body;
+    const { paramId } = req.params;
 
+    if (userId !== paramId) {
+        try {
+            const user = await User.findById(paramId);
+            const currentUser = await User.findById(userId);
+
+            if (!user.followers.includes(userId)) {
+                res.status(200).json("Puedes seguir a está persona");
+            } else {
+                res.status(403).json("Ya estas sigiendo a esta persona");
+            }
+
+        } catch (err) {
+            res.status(500).json(err);
+        }
+    } else {
+        res.status(403).json("No puedes seguirte a ti mismo");
+    }
 }
 
 const unfollowUser = async () => {
