@@ -58,15 +58,17 @@ const getUser = async (req, res) => {
 
 const followUser = async (req, res) => {
     const { userId } = req.body;
-    const { paramId } = req.params;
+    const { id } = req.params;
 
-    if (userId !== paramId) {
+    if (userId !== id) {
         try {
-            const user = await User.findById(paramId);
+            const user = await User.findById(id);
             const currentUser = await User.findById(userId);
 
             if (!user.followers.includes(userId)) {
-                res.status(200).json("Puedes seguir a está persona");
+                await user.updateOne({ $push: {followers:userId} });
+                await currentUser.updateOne({ $push: {followins:id} });
+                res.status(200).json("Siguiendo persona");
             } else {
                 res.status(403).json("Ya estas sigiendo a esta persona");
             }
@@ -79,8 +81,29 @@ const followUser = async (req, res) => {
     }
 }
 
-const unfollowUser = async () => {
+const unfollowUser = async (req, res) => {
+    const { userId } = req.body;
+    const { id } = req.params;
 
+    if (userId !== id) {
+        try {
+            const user = await User.findById(id);
+            const currentUser = await User.findById(userId);
+
+            if (user.followers.includes(userId)) {
+                await user.updateOne({ $pull: {followers:userId} });
+                await currentUser.updateOne({ $pull: {followins:id} });
+                res.status(200).json("se quito de persona que sigues");
+            } else {
+                res.status(403).json("No sigues a esta persona");
+            }
+
+        } catch (err) {
+            res.status(500).json(err);
+        }
+    } else {
+        res.status(403).json("No puedes seguirte a ti mismo");
+    }
 }
 
 module.exports = {

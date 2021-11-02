@@ -7,6 +7,7 @@ const morgan = require('morgan')
 const PORT = process.env.PORT || 4000;
 const usersRoute = require("./routes/users");
 const authRoute = require("./routes/auth");
+const postsRoute = require("./routes/posts");
 
 dotenv.config(); // config environment
 
@@ -24,7 +25,8 @@ app.use(helmet());
 app.use(morgan("common"));
 
 // using routes
-app.use("/api/users", usersRoute);
 app.use("/api/auth", authRoute);
+app.use("/api/users", usersRoute);
+app.use("/api/posts", postsRoute);
 
 app.listen(PORT, () => console.log(`servidor corriendo en el puerto ${PORT}`));
